@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 
 import '../module/contact.dart';
@@ -18,6 +17,7 @@ class _ContactsViewState extends State<ContactsView> {
   void initState() {
     name = TextEditingController();
     phoneNumber = TextEditingController();
+
     super.initState();
   }
 
@@ -44,9 +44,24 @@ class _ContactsViewState extends State<ContactsView> {
             } else {
               return ListView.builder(
                 itemCount: box.length,
-                itemBuilder: (context, index) => ListTile(
-                  title: Text(box.getAt(index)!.name.toString()),
-                  subtitle: Text(box.getAt(index)!.phoneNumber.toString()),
+                itemBuilder: (context, index) => Dismissible(
+                  key: Key(box.keyAt(index)),
+                  background: Container(
+                    color: Colors.red,
+                    child: const Icon(Icons.delete),
+                  ),
+                  onDismissed: (direction) {
+                    box.deleteAt(index);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('$box dismissed')));
+                  },
+                  child: ListTile(
+                    // onTap: () => Navi,
+                    title: Text(box.getAt(index)!.name.toString()),
+                    subtitle: Text(
+                      box.getAt(index)!.phoneNumber.toString(),
+                    ),
+                  ),
                 ),
               );
             }
@@ -58,6 +73,7 @@ class _ContactsViewState extends State<ContactsView> {
         ));
   }
 
+// 0548790936
   _showForm() {
     showModalBottomSheet(
         context: context,
@@ -69,6 +85,7 @@ class _ContactsViewState extends State<ContactsView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextFormField(
+                    // initialValue: box.isEmpty?'':box.getAt(index)!.name,
                     controller: name,
                     decoration: const InputDecoration(
                       hintText: 'Name',
@@ -92,6 +109,8 @@ class _ContactsViewState extends State<ContactsView> {
                                 phoneNumber: phoneNumber.text));
                         if (!mounted) return;
                         Navigator.of(_).pop();
+                        name.clear();
+                        phoneNumber.clear();
                       },
                       child: const Text('AddTo'))
                 ],
